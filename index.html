@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klassen-Ziele</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        /* Eingabebereich für neue Kinder */
+        .add-section {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+            width: 200px;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #3498db;
+            color: white;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        button.btn-plus { background-color: var(--primary-color); font-weight: bold; width: 40px;}
+        button.btn-plus:hover { background-color: #45a049; }
+        
+        button.btn-minus { background-color: #e74c3c; font-weight: bold; width: 40px;}
+        button.btn-minus:hover { background-color: #c0392b; }
+
+        button.btn-delete {
+            background-color: #95a5a6;
+            font-size: 12px;
+            padding: 5px 10px;
+            margin-top: 15px;
+        }
+
+        /* Raster für die Schüler-Karten */
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Karte für jedes Kind */
+        .student-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .student-card h3 {
+            margin-top: 0;
+            font-size: 20px;
+            color: #2c3e50;
+        }
+
+        /* Das "Glas" */
+        .glass {
+            width: 70px;
+            height: 150px;
+            border: 4px solid #bdc3c7;
+            border-top: none;
+            border-radius: 0 0 15px 15px;
+            position: relative;
+            background: #ecf0f1;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        /* Die Füllung */
+        .liquid {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to top, #3498db, #2980b9);
+            transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+        }
+
+        /* 10 Stufen-Markierungen */
+        .glass::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            /* Erstellt 10 horizontale Linien */
+            background-image: repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent calc(10% - 1px),
+                rgba(0,0,0,0.2) calc(10% - 1px),
+                rgba(0,0,0,0.2) 10%
+            );
+            z-index: 2;
+        }
+
+        /* Steuerungsbereich */
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .points-display {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .tokens {
+            font-size: 16px;
+            font-weight: bold;
+            color: #f39c12;
+            background: #fff3e0;
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 1px solid #f39c12;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🌟 Klassen-Ziele 🌟</h1>
+    
+    <div class="add-section">
+        <input type="text" id="studentName" placeholder="Name des Kindes eingeben" onkeypress="handleKeyPress(event)">
+        <button onclick="addStudent()">Kind hinzufügen</button>
+    </div>
+
+    <div class="students-grid" id="studentsGrid">
+        </div>
+
+    <script>
+        // Daten aus dem lokalen Speicher laden oder ein leeres Array starten
+        let students = JSON.parse(localStorage.getItem('classPointsData')) || [];
+
+        // Funktion zum Speichern der Daten
+        function saveData() {
+            localStorage.setItem('classPointsData', JSON.stringify(students));
+        }
+
+        // Funktion, um die Benutzeroberfläche zu aktualisieren
+        function renderStudents() {
+            const grid = document.getElementById('studentsGrid');
+            grid.innerHTML = ''; // Vorherigen Inhalt löschen
+
+            students.forEach((student, index) => {
+                // Berechne die Füllhöhe in Prozent (max 100%)
+                const fillPercentage = (student.points / 10) * 100;
+
+                const card = document.createElement('div');
+                card.className = 'student-card';
+                card.innerHTML = `
+                    <h3>${student.name}</h3>
+                    <div class="glass">
+                        <div class="liquid" style="height: ${fillPercentage}%"></div>
+                    </div>
+                    <div class="controls">
+                        <button class="btn-minus" onclick="changePoints(${index}, -1)">-</button>
+                        <span class="points-display">${student.points} / 10</span>
+                        <button class="btn-plus" onclick="changePoints(${index}, 1)">+</button>
+                    </div>
+                    <div class="tokens">🎫 Wertmarken: ${student.tokens}</div>
+                    <button class="btn-delete" onclick="removeStudent(${index})">Entfernen</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Kind hinzufügen
+        function addStudent() {
+            const nameInput = document.getElementById('studentName');
+            const name = nameInput.value.trim();
+
+            if (name !== '') {
+                students.push({
+                    name: name,
+                    points: 0,
+                    tokens: 0
+                });
+                nameInput.value = ''; // Eingabefeld leeren
+                saveData();
+                renderStudents();
+            }
+        }
+
+        // Enter-Taste im Eingabefeld erlauben
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                addStudent();
+            }
+        }
+
+        // Punkte ändern (+ oder -)
+        function changePoints(index, amount) {
+            students[index].points += amount;
+
+            // Wenn Punkte unter 0 fallen, bei 0 bleiben
+            if (students[index].points < 0) {
+                students[index].points = 0;
+            }
+
+            // Wenn 10 Punkte erreicht sind: Glas leeren, 1 Wertmarke hinzufügen
+            if (students[index].points >= 10) {
+                // Kurze Verzögerung für den Überraschungseffekt
+                setTimeout(() => {
+                    students[index].points -= 10;
+                    students[index].tokens += 1;
+                    saveData();
+                    renderStudents();
+                    alert(`🎉 ${students[index].name} hat das Glas gefüllt und eine Wertmarke verdient! 🎉`);
+                }, 400); // Wartet 0,4 Sekunden, damit das Glas visuell voll wird, bevor es sich leert
+            }
+
+            saveData();
+            renderStudents();
+        }
+
+        // Kind entfernen (z.B. bei Tippfehlern)
+        function removeStudent(index) {
+            if(confirm(`Möchtest du ${students[index].name} wirklich entfernen?`)) {
+                students.splice(index, 1);
+                saveData();
+                renderStudents();
+            }
+        }
+
+        // Beim ersten Laden der Seite die Schüler anzeigen
+        renderStudents();
+    </script>
+</body>
+</html>
