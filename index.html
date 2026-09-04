@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Klassen-Ziele</title>
+    <title>3a</title>
     <style>
         :root {
             --primary-color: #4CAF50;
@@ -163,7 +163,7 @@
 </head>
 <body>
 
-    <h1>🌟 Klassen-Ziele 🌟</h1>
+    <h1>3a</h1>
     
     <div class="add-section">
         <input type="text" id="studentName" placeholder="Name des Kindes eingeben" onkeypress="handleKeyPress(event)">
@@ -251,8 +251,7 @@
                     students[index].tokens += 1;
                     saveData();
                     renderStudents();
-                    alert(`🎉 ${students[index].name} hat das Glas gefüllt und eine Wertmarke verdient! 🎉`);
-                }, 400); // Wartet 0,4 Sekunden, damit das Glas visuell voll wird, bevor es sich leert
+                }, 4000); // Wartet 4 Sekunden, damit das Glas visuell voll wird, bevor es sich leert
             }
 
             saveData();
